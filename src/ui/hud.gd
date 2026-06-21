@@ -56,6 +56,7 @@ func _build() -> void:
 	var dot := ColorRect.new()
 	dot.color = Color(1, 1, 1, 0.55)
 	dot.custom_minimum_size = Vector2(4, 4)
+	dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dot.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	dot.offset_left = -2
 	dot.offset_top = -2

@@ -21,6 +21,15 @@ extends Node
 @export var warmth_loss_night: float = 0.0020
 @export var warmth_gain_fire: float = 0.0040
 
+# Per-in-game-minute HEALTH rates. Deliberately small: the game clock advances
+# many in-game minutes per real second, so a per-minute tick fires often. Tune
+# survivability here rather than in code.
+@export var health_cold_drain: float = 0.00010
+@export var health_starve_drain: float = 0.00005
+@export var health_bleed_drain: float = 0.00012
+@export var health_fever_drain: float = 0.00008
+@export var health_regen: float = 0.00010
+
 ## Set by the world/camp.
 var near_fire: bool = false
 var sheltered: bool = false
@@ -77,14 +86,14 @@ func _tick_warmth() -> void:
 func _tick_health() -> void:
 	var delta := 0.0
 	if warmth <= 0.05:
-		delta -= 0.0020          # freezing
+		delta -= health_cold_drain          # freezing
 	if hunger >= 0.98 or thirst >= 0.98:
-		delta -= 0.0010          # starvation / dehydration
+		delta -= health_starve_drain        # starvation / dehydration
 	if wound_system != null:
-		delta -= wound_system.total_bleeding() * 0.0030
-		delta -= wound_system.total_fever() * 0.0015
+		delta -= wound_system.total_bleeding() * health_bleed_drain
+		delta -= wound_system.total_fever() * health_fever_drain
 	if delta == 0.0 and warmth > 0.5 and hunger < 0.7 and thirst < 0.7:
-		delta += 0.0006          # slow recovery when stable
+		delta += health_regen               # slow recovery when stable
 	if delta != 0.0:
 		_apply("health", health + delta)
 	if health <= 0.0:

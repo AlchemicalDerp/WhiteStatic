@@ -31,14 +31,26 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
+	# Mouse look is handled in _input (before the GUI) so HUD Controls such as
+	# the crosshair can't swallow the motion events.
 	if not active:
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		rotate_y(-event.relative.x * mouse_sensitivity)
 		_pitch = clampf(_pitch - event.relative.y * mouse_sensitivity, -1.4, 1.4)
 		head.rotation.x = _pitch
-	elif event.is_action_pressed("interact"):
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not active:
+		return
+	# Recapture the cursor on click (focus loss, or web pointer-lock which needs
+	# a user gesture before it will engage).
+	if event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		return
+	if event.is_action_pressed("interact"):
 		interactor.try_interact()
 
 
